@@ -1,125 +1,263 @@
 <!DOCTYPE html>
-<html >
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  
-  <title>Network Intrusion Detection & Security Analysis System</title>
-  <link rel="stylesheet" href="static/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Network Intrusion Detection &amp; Security Analysis System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
- <div class="login">
-    <h1>Network Intrusion Detection & Security Analysis System</h1>
-    <p class="subtitle">
-    Machine learning based network traffic analysis for intrusion detection and risk assessment
-</p>
-    
 
+{# ---- small inline SVG icon set (no external files needed) ---- #}
+{% macro icon(name) -%}
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {%- if name == 'shield' %}<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  {%- elif name == 'activity' %}<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  {%- elif name == 'check' %}<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+  {%- elif name == 'warn' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  {%- elif name == 'octagon' %}<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  {%- elif name == 'info' %}<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+  {%- elif name == 'clock' %}<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  {%- endif %}
+</svg>
+{%- endmacro %}
 
-     <!-- Main Input For Receiving Query to our ML -->
-    <form action="{{ url_for('predict')}}"method="post">
-        <label for="attack">Attack:</label>
-        <select id="attack" name="attack">
-          <option value="0">Other</option>
-          <option value="1">neptune</option>
-          <option value="2">normal</option>
-          <option value="3">satan</option>
-        </select><br><br>
-
-        <label for="count">Number of connections to the same destination host as the current connection in the past two seconds :</label>
-    	<input type="text" name="count" placeholder="count" required="required" /><br><br>
-
-    	<label for="dst_host_diff_srv_rate">The percentage of connections that were to different services, among the connections aggregated in dst_host_count :</label>
-        <input type="text" name="dst_host_diff_srv_rate" placeholder="dst_host_diff_srv_rate" required="required" /><br><br>
-
-        <label for="dst_host_same_src_port_rate">The percentage of connections that were to the same source port, among the connections aggregated in dst_host_srv_count :</label>
-		<input type="text" name="dst_host_same_src_port_rate" placeholder="dst_host_same_src_port_rate" required="required" /><br><br>
-
-		<label for="dst_host_same_srv_rate">The percentage of connections that were to the same service, among the connections aggregated in dst_host_count :</label>
-		<input type="text" name="dst_host_same_srv_rate" placeholder="dst_host_same_srv_rate" required="required" /><br><br>
-
-		<label for="dst_host_srv_count">Number of connections having the same port number :</label>
-		<input type="text" name="dst_host_srv_count" placeholder="dst_host_srv_count" required="required" /><br><br>
-
-		<label for="flag">Status of the connection –Normal or Error :</label>
-		<select id="flag" name="flag">
-          <option value="0">Other</option>
-          <option value="1">S0</option>
-          <option value="2">SF</option>
-        </select><br><br>
-
-        <label for="last_flag">Last Flag :</label>
-    	<input type="text" name="last_flag" placeholder="last_flag" required="required" /><br><br>
-
-    	<label for="logged_in">1 if successfully logged in; 0 otherwise :</label>
-        <input type="text" name="logged_in" placeholder="logged_in" required="required" /><br><br>
-
-    	<label for="same_srv_rate">The percentage of connections that were to the same service, among the connections aggregated in count :</label>
-        <input type="text" name="same_srv_rate" placeholder="same_srv_rate" required="required" /><br><br>
-
-        <label for="serror_rate">The percentage of connections that have activated the flag (4) s0, s1, s2 or s3, among the connections aggregated in count :</label>
-        <input type="text" name="serror_rate" placeholder="serror_rate" required="required" /><br><br>
-
-		<label for="service_http">Destination network service used http or not :</label>
-		<select id="service_http" name="service_http">
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select><br><br>
-
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
-   <br>
-    
-
-{% if output %}
-<div class="result-card">
-
-    <h2>Security Analysis Result</h2>
-
-    <p>
-        <strong>Attack Class:</strong>
-        <span class="attack-result">{{ output }}</span>
-    </p>
-
-    <p>
-        <strong>Risk Level:</strong>
-        <span class="risk-result">{{ risk_level }}</span>
-    </p>
-
-    <p>
-        <strong>Prediction Confidence:</strong>
-        <span class="confidence-result">{{ confidence }}%</span>
-    </p>
-
+{# ---- one numeric input with label, hint and valid range ---- #}
+{% macro number(name, label, hint, lo, hi, step) %}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }} <code>{{ name }}</code></label>
+  <input id="{{ name }}" name="{{ name }}" type="number" inputmode="decimal" step="{{ step }}" min="{{ lo }}" max="{{ hi }}"
+         required value="{{ values.get(name, '') }}" placeholder="{{ lo }} to {{ hi }}">
+  <span class="hint">{{ hint }} <span class="range">Valid range: {{ lo }} to {{ hi }}</span></span>
+  {% if errors.get(name) %}<span class="field-error">{{ errors[name] }}</span>{% endif %}
 </div>
-{% endif %}
+{% endmacro %}
 
-{% if history %}
-<div class="history-card">
-
-    <h2>Prediction History</h2>
-
-    <table>
-        <tr>
-            <th>Attack Class</th>
-            <th>Risk Level</th>
-            <th>Confidence</th>
-        </tr>
-
-        {% for item in history %}
-        <tr>
-            <td>{{ item.attack }}</td>
-            <td>{{ item.risk }}</td>
-            <td>{{ item.confidence }}%</td>
-        </tr>
-        {% endfor %}
-
-    </table>
-
+{# ---- one dropdown input ---- #}
+{% macro choice(name, label, hint, options) %}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }} <code>{{ name }}</code></label>
+  <select id="{{ name }}" name="{{ name }}" required>
+    {% for val, text in options %}
+    <option value="{{ val }}" {{ 'selected' if values.get(name) == val }}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  <span class="hint">{{ hint }}</span>
+  {% if errors.get(name) %}<span class="field-error">{{ errors[name] }}</span>{% endif %}
 </div>
-{% endif %}
+{% endmacro %}
 
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#dashboard">
+      <span class="brand-icon">{{ icon('shield') }}</span>
+      <span class="brand-text">
+        <strong>Network Intrusion Detection &amp; Security Analysis System</strong>
+        <small>Machine learning based traffic analysis for intrusion detection and risk assessment</small>
+      </span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#prediction">Prediction</a>
+      <a href="#history">History</a>
+    </nav>
+  </div>
+</header>
 
-   </div>
+<main class="wrap">
+
+  {% if model_error %}<div class="alert alert-error">{{ model_error }}</div>{% endif %}
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="dashboard">
+    <h2 class="section-title">Dashboard</h2>
+    <p class="section-sub">
+      This system classifies network connection records into Normal traffic or one of four NSL-KDD attack
+      categories (DOS, PROBE, R2L, U2R) using a Logistic Regression model, and assigns an application-defined risk level.
+      The counts below cover the predictions made in your current browser session.
+    </p>
+
+    <div class="cards">
+      <div class="stat">
+        <span class="stat-icon blue">{{ icon('activity') }}</span>
+        <div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total predictions</div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon green">{{ icon('check') }}</span>
+        <div><div class="stat-value">{{ summary.normal }}</div><div class="stat-label">Normal traffic</div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon amber">{{ icon('warn') }}</span>
+        <div><div class="stat-value">{{ summary.attacks }}</div><div class="stat-label">Detected attacks</div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon red">{{ icon('octagon') }}</span>
+        <div><div class="stat-value">{{ summary.high }}</div><div class="stat-label">High / Critical risk</div></div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="panel">
+        <h3>Model information</h3>
+        <dl class="facts">
+          <div><dt>Algorithms</dt><dd>Logistic Regression or Random Forest (your choice)</dd></div>
+          <div><dt>Input features</dt><dd>{{ model_info.features }} network traffic features</dd></div>
+          <div><dt>Output classes</dt><dd>{{ model_info.classes }}: Normal, DOS, PROBE, R2L, U2R</dd></div>
+          <div><dt>Training data</dt><dd>NSL-KDD (Train.txt)</dd></div>
+        </dl>
+      </div>
+      <div class="panel notice">
+        <h3>{{ icon('info') }} Important model limitation</h3>
+        <p>The model has comparatively weaker detection performance for R2L and U2R attack categories.
+           Predictions should be treated as decision-support information rather than guaranteed detection.</p>
+        <p class="small">In this project's test evaluation, Random Forest detected fewer R2L and U2R attacks than Logistic Regression, so check the selected algorithm shown with every result.</p>
+        <p class="small">Risk levels: Normal = Low, PROBE = Medium, DOS and R2L = High, U2R = Critical.
+           These are application-defined, not part of the dataset.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PREDICTION ================= -->
+  <section id="prediction">
+    <h2 class="section-title">Prediction</h2>
+    <p class="section-sub">Enter the connection statistics by hand (this is not live packet capture), or load a real sample record from the NSL-KDD test set.</p>
+
+    {% if errors %}
+    <div class="alert alert-error" role="alert">{{ errors._ if errors._ else 'Please correct the highlighted fields and try again.' }}</div>
+    {% endif %}
+
+    <div class="predict-grid">
+      <form class="panel" action="{{ url_for('predict') }}#prediction" method="post" id="predict-form">
+
+        <div class="algo-select">
+          <label for="algorithm">Algorithm <code>algorithm</code></label>
+          <select id="algorithm" name="algorithm">
+            {% for key, name, available in algorithms %}
+            <option value="{{ key }}" {{ 'selected' if selected_algorithm == key }} {{ 'disabled' if not available }}>{{ name }}{{ '' if available else ' (unavailable)' }}</option>
+            {% endfor %}
+          </select>
+          <span class="hint">Both algorithms receive exactly the same 11 features, in the same order, and predict the same five classes.</span>
+        </div>
+
+        <div class="samples">
+          <span>Load a sample record:</span>
+          <button type="button" class="btn-sample" data-sample='{"count":"1","dst_host_diff_srv_rate":"0","dst_host_same_src_port_rate":"0.01","dst_host_same_srv_rate":"1","dst_host_srv_count":"255","flag":"2","logged_in":"1","same_srv_rate":"1","serror_rate":"0","service_http":"1"}'>Normal record</button>
+          <button type="button" class="btn-sample" data-sample='{"count":"244","dst_host_diff_srv_rate":"0.08","dst_host_same_src_port_rate":"0","dst_host_same_srv_rate":"0.08","dst_host_srv_count":"20","flag":"0","logged_in":"0","same_srv_rate":"0.08","serror_rate":"0","service_http":"0"}'>DOS record</button>
+          <button type="button" class="btn-sample" data-sample='{"count":"235","dst_host_diff_srv_rate":"0.94","dst_host_same_src_port_rate":"0.99","dst_host_same_srv_rate":"0","dst_host_srv_count":"1","flag":"2","logged_in":"0","same_srv_rate":"0","serror_rate":"0","service_http":"0"}'>PROBE record</button>
+        </div>
+
+        <fieldset>
+          <legend>1. Connection volume</legend>
+          <div class="fields">
+            {{ number('count', 'Recent connections to the same host', 'Connections to the same destination host in the past 2 seconds.', 0, 511, 1) }}
+            {{ number('dst_host_srv_count', 'Recent connections to the same service', 'Connections to the destination host that used the same service.', 0, 255, 1) }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2. Service and host behaviour <span class="muted">(rates are fractions, e.g. 0.5 = 50%)</span></legend>
+          <div class="fields">
+            {{ number('same_srv_rate', 'Same-service rate', 'Share of the recent connections that used the same service.', 0, 1, 'any') }}
+            {{ number('dst_host_same_srv_rate', 'Host same-service rate', 'Share of connections to the destination host that used the same service.', 0, 1, 'any') }}
+            {{ number('dst_host_diff_srv_rate', 'Host different-service rate', 'Share of connections to the destination host that used different services.', 0, 1, 'any') }}
+            {{ number('dst_host_same_src_port_rate', 'Same source-port rate', 'Share of connections to the same service that came from the same source port.', 0, 1, 'any') }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3. Connection status and errors</legend>
+          <div class="fields">
+            {{ choice('flag', 'Connection status flag', 'SF = normal start and end. S0 = connection attempt with no reply.', [('2','SF - normal'),('1','S0 - no reply'),('0','Other flag')]) }}
+            {{ number('serror_rate', 'SYN-error rate', 'Share of the recent connections with SYN errors (flags S0 to S3).', 0, 1, 'any') }}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>4. Session details</legend>
+          <div class="fields">
+            {{ choice('logged_in', 'Successfully logged in?', 'Whether a login succeeded on this connection.', [('0','No'),('1','Yes')]) }}
+            {{ choice('service_http', 'HTTP service?', 'Whether the destination service is HTTP.', [('0','No'),('1','Yes')]) }}
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn">Predict traffic class</button>
+      </form>
+
+      <div class="result-col">
+        {% if output %}
+        <div class="panel result {{ 'result-normal' if not is_attack else 'result-attack' }} risk-{{ risk_css }}">
+          <div class="result-verdict">
+            {{ icon('check') if not is_attack else icon('warn') }}
+            {{ 'Normal traffic' if not is_attack else 'Suspicious traffic' }}
+          </div>
+          <h3>Security analysis result</h3>
+          <div class="result-row"><span>Algorithm used</span><strong class="algorithm-result">{{ algorithm_name }}</strong></div>
+          <div class="result-row"><span>Attack class</span><strong class="attack-result">{{ output }}</strong></div>
+          <div class="result-row"><span>Risk level</span><strong class="risk-result risk-pill pill-{{ risk_css }}">{{ risk_level }}</strong></div>
+          <div class="result-row"><span>Prediction confidence</span><strong class="confidence-result">{{ confidence }}%</strong></div>
+          <div class="meter" role="img" aria-label="Confidence {{ confidence }} percent"><div style="width: {{ confidence }}%"></div></div>
+          <p class="note">Prediction confidence represents the model's probability estimate for this individual prediction. It is not the overall model accuracy.</p>
+        </div>
+        {% else %}
+        <div class="panel result-empty">
+          <h3>Security analysis result</h3>
+          <p class="muted">Fill in the form (or load a sample record) and press <strong>Predict traffic class</strong>. The predicted category, risk level and confidence will appear here.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HISTORY ================= -->
+  <section id="history">
+    <h2 class="section-title">Prediction history</h2>
+    <p class="section-sub">The most recent predictions from this browser session (up to 15 are shown).</p>
+    <div class="panel">
+      {% if history %}
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Date / time</th><th>Algorithm</th><th>Predicted class</th><th>Risk level</th><th class="num">Confidence</th></tr></thead>
+          <tbody>
+          {% for item in history|reverse %}
+            <tr>
+              <td>{{ item.get('time', 'not recorded') }}</td>
+              <td>{{ item.get('algorithm', 'Logistic Regression') }}</td>
+              <td><strong>{{ item.attack }}</strong></td>
+              <td><span class="risk-pill pill-{{ item.risk.split()[0]|lower }}">{{ item.risk }}</span></td>
+              <td class="num">{{ item.confidence }}%</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        {{ icon('clock') }}
+        <p><strong>No predictions yet</strong></p>
+        <p class="muted">Run a prediction above and it will be listed here with its time, class, risk level and confidence.</p>
+        <a class="btn-link" href="#prediction">Go to Prediction</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap footer">
+  Manual network-feature prediction on the NSL-KDD dataset. Not a live packet-capture or monitoring system.
+</footer>
+
+<script>
+  // Fills the form with a real NSL-KDD test record. Purely a convenience; the server re-validates everything.
+  document.querySelectorAll('.btn-sample').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sample = JSON.parse(btn.getAttribute('data-sample'));
+      Object.keys(sample).forEach(function (name) {
+        var el = document.getElementById(name);
+        if (el) { el.value = sample[name]; }
+      });
+    });
+  });
+</script>
 </body>
 </html>

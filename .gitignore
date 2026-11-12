@@ -2,5 +2,8 @@ venv/
 .venv/
 __pycache__/
 *.py[cod]
-.env
+.idea/
 .vscode/
+*.log
+.DS_Store
+Network-Intrusion-Detection-System-master/

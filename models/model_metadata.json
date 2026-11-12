@@ -1,0 +1,136 @@
+{
+  "trained_at_utc": "2026-11-03T06:38:43+00:00",
+  "features": [
+    "count",
+    "dst_host_diff_srv_rate",
+    "dst_host_same_src_port_rate",
+    "dst_host_same_srv_rate",
+    "dst_host_srv_count",
+    "flag_S0",
+    "flag_SF",
+    "logged_in",
+    "same_srv_rate",
+    "serror_rate",
+    "service_http"
+  ],
+  "feature_order_note": "Inference DataFrames must use exactly this column order.",
+  "excluded_features_note": "last_flag (NSL-KDD difficulty level) is excluded: it is a dataset annotation, not observable traffic. attack-derived dummies are never used.",
+  "class_names": {
+    "0": "Normal",
+    "1": "DOS",
+    "2": "PROBE",
+    "3": "R2L",
+    "4": "U2R"
+  },
+  "risk_levels": {
+    "0": "Low Risk",
+    "1": "High Risk",
+    "2": "Medium Risk",
+    "3": "High Risk",
+    "4": "Critical Risk"
+  },
+  "attack_map": {
+    "normal": 0,
+    "back": 1,
+    "land": 1,
+    "neptune": 1,
+    "pod": 1,
+    "smurf": 1,
+    "teardrop": 1,
+    "apache2": 1,
+    "udpstorm": 1,
+    "processtable": 1,
+    "worm": 1,
+    "mailbomb": 1,
+    "satan": 2,
+    "ipsweep": 2,
+    "nmap": 2,
+    "portsweep": 2,
+    "mscan": 2,
+    "saint": 2,
+    "guess_passwd": 3,
+    "ftp_write": 3,
+    "imap": 3,
+    "phf": 3,
+    "multihop": 3,
+    "warezmaster": 3,
+    "warezclient": 3,
+    "spy": 3,
+    "xlock": 3,
+    "xsnoop": 3,
+    "snmpguess": 3,
+    "snmpgetattack": 3,
+    "httptunnel": 3,
+    "sendmail": 3,
+    "named": 3,
+    "buffer_overflow": 4,
+    "loadmodule": 4,
+    "rootkit": 4,
+    "perl": 4,
+    "sqlattack": 4,
+    "xterm": 4,
+    "ps": 4
+  },
+  "feature_encoding": {
+    "flag_S0": "1 if flag == 'S0' else 0",
+    "flag_SF": "1 if flag == 'SF' else 0",
+    "service_http": "1 if service == 'http' else 0"
+  },
+  "models": {
+    "lr": {
+      "file": "model_lr.pkl",
+      "name": "Logistic Regression",
+      "pipeline": "StandardScaler -> LogisticRegression",
+      "params": {
+        "max_iter": 3000,
+        "class_weight": "balanced",
+        "random_state": 42
+      },
+      "scaler_mean": {
+        "count": 84.1075547934875,
+        "dst_host_diff_srv_rate": 0.08295110857088424,
+        "dst_host_same_src_port_rate": 0.14837885896184103,
+        "dst_host_same_srv_rate": 0.5212416946488533,
+        "dst_host_srv_count": 115.65300500900987,
+        "flag_S0": 0.2766545212069253,
+        "flag_SF": 0.5949290721027521,
+        "logged_in": 0.3957355941352512,
+        "same_srv_rate": 0.6609276591015536,
+        "serror_rate": 0.2844845323997999,
+        "service_http": 0.32021147388726157
+      },
+      "scaler_scale": {
+        "count": 114.50815285665445,
+        "dst_host_diff_srv_rate": 0.18892105005276214,
+        "dst_host_same_src_port_rate": 0.30899590392865606,
+        "dst_host_same_srv_rate": 0.4489475817872073,
+        "dst_host_srv_count": 110.70230138924722,
+        "flag_S0": 0.4473441595714559,
+        "flag_SF": 0.490905766180955,
+        "logged_in": 0.489008112069392,
+        "same_srv_rate": 0.43962111749493993,
+        "serror_rate": 0.4464538522984832,
+        "service_http": 0.4665576983377395
+      }
+    },
+    "rf": {
+      "file": "model_rf.pkl",
+      "name": "Random Forest",
+      "pipeline": "RandomForestClassifier (no scaling)",
+      "params": {
+        "n_estimators": 200,
+        "class_weight": "balanced_subsample",
+        "random_state": 42,
+        "n_jobs": -1
+      }
+    }
+  },
+  "train_rows": 125973,
+  "test_rows": 22544,
+  "versions": {
+    "python": "3.13.18",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  }
+}
